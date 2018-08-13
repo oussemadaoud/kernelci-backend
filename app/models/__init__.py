@@ -294,11 +294,11 @@ BISECT_GOOD_COMMIT_DATE = "good_commit_date"
 BISECT_BAD_COMMIT_DATE = "bad_commit_date"
 BISECT_GOOD_COMMIT_URL = "good_commit_url"
 BISECT_BAD_COMMIT_URL = "bad_commit_url"
-BISECT_GOOD_SUMMARY_KEY = "good_summary"
-BISECT_BAD_SUMMARY_KEY = "bad_summary"
-BISECT_FOUND_SUMMARY_KEY = "found_summary"
-BISECT_CHECKS_KEY = "checks"
-BISECT_LOG_KEY = "log"
+
+
+
+#modified
+
 
 # LAVA Callback keys
 LAVA_DEFINITION_KEY = "definition"
@@ -789,24 +789,24 @@ BISECT_VALID_KEYS = {
         COLLECTION_KEY,
         COMPARE_TO_KEY,
         BUILD_ID_KEY
-    ],
-    "POST": [
-        TYPE_KEY,
-        ARCHITECTURE_KEY,
-        JOB_KEY,
-        GIT_BRANCH_KEY,
-        DEFCONFIG_FULL_KEY,
-        LAB_NAME_KEY,
-        DEVICE_TYPE_KEY,
-        BISECT_GOOD_COMMIT_KEY,
-        BISECT_BAD_COMMIT_KEY,
-        BISECT_GOOD_SUMMARY_KEY,
-        BISECT_BAD_SUMMARY_KEY,
-        BISECT_FOUND_SUMMARY_KEY,
-        BISECT_LOG_KEY,
-        BISECT_CHECKS_KEY,
-    ],
+    ]
 }
+
+
+
+
+
+
+
+#modified
+
+
+
+
+
+
+
+
 
 TEST_SUITE_VALID_KEYS = {
     "POST": {
@@ -942,6 +942,8 @@ TEST_CASE_VALID_KEYS = {
             ATTACHMENTS_KEY,
             CREATED_KEY,
             DEFINITION_URI_KEY,
+            #modified
+            KERNEL_KEY,
             KVM_GUEST_KEY,
             MAXIMUM_KEY,
             MEASUREMENTS_KEY,
@@ -965,6 +967,8 @@ TEST_CASE_VALID_KEYS = {
         ATTACHMENTS_KEY,
         CREATED_KEY,
         DEFINITION_URI_KEY,
+        #modified
+        KERNEL_KEY,
         KVM_GUEST_KEY,
         MAXIMUM_KEY,
         MEASUREMENTS_KEY,
@@ -986,6 +990,8 @@ TEST_CASE_VALID_KEYS = {
     "GET": [
         CREATED_KEY,
         DEFINITION_URI_KEY,
+        #modified
+        KERNEL_KEY,
         KVM_GUEST_KEY,
         MAXIMUM_KEY,
         MINIMUM_KEY,
