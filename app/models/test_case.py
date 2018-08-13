@@ -29,7 +29,7 @@ class TestCaseDocument(mbase.BaseDocument):
     is run and that reports a result.
     """
 
-    def __init__(self, name, test_suite_id=None, version="1.0", status="PASS"):
+    def __init__(self, name, test_suite_id=None, build_type=None, version="1.0", status="PASS"):
         """
 
         :param name: The name given to this test case.
@@ -45,6 +45,7 @@ class TestCaseDocument(mbase.BaseDocument):
         self._name = name
         self._status = status
         self._test_suite_id = test_suite_id
+        self._build_type = build_type
         self._version = version
 
         self._attachments = []
@@ -52,6 +53,7 @@ class TestCaseDocument(mbase.BaseDocument):
         self._parameters = {}
 
         self.definition_uri = None
+        self.kernel = None
         self.kvm_guest = None
         self.maximum = None
         self.metadata = {}
@@ -144,6 +146,20 @@ class TestCaseDocument(mbase.BaseDocument):
         :type value: string
         """
         self._test_suite_id = value
+        
+    @property
+    def build_type(self):
+        """The ID of the associated test suite."""
+        return self._build_type
+
+    @build_type.setter
+    def build_type(self, value):
+        """Set the associated test suite ID.
+
+        :param value: The test suite ID.
+        :type value: string
+        """
+        self._build_type = value
 
     @property
     def attachments(self):
@@ -236,6 +252,7 @@ class TestCaseDocument(mbase.BaseDocument):
             models.ATTACHMENTS_KEY: self.attachments,
             models.CREATED_KEY: self.created_on,
             models.DEFINITION_URI_KEY: self.definition_uri,
+            models.KERNEL_KEY: self.kernel,
             models.KVM_GUEST_KEY: self.kvm_guest,
             models.MAXIMUM_KEY: self.maximum,
             models.MEASUREMENTS_KEY: self.measurements,
@@ -250,6 +267,7 @@ class TestCaseDocument(mbase.BaseDocument):
             models.TEST_SET_ID_KEY: self.test_set_id,
             models.TEST_SUITE_ID_KEY: self.test_suite_id,
             models.TEST_SUITE_NAME_KEY: self.test_suite_name,
+            models.BUILD_TYPE_KEY: self.build_type,
             models.TIME_KEY: self.time,
             models.VCS_COMMIT_KEY: self.vcs_commit,
             models.VERSION_KEY: self.version
