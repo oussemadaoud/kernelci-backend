@@ -194,12 +194,7 @@ x86_64_ARCHITECTURE_KEY = "x86_64"
 # Email reporting control fields.
 SEND_BOOT_REPORT_KEY = "boot_report"
 SEND_BUILD_REPORT_KEY = "build_report"
-BOOT_REPORT_SEND_TO_KEY = "boot_send_to"
-BOOT_REPORT_SEND_CC_KEY = "boot_send_cc"
-BOOT_REPORT_SEND_BCC_KEY = "boot_send_bcc"
-BUILD_REPORT_SEND_TO_KEY = "build_send_to"
-BUILD_REPORT_SEND_CC_KEY = "build_send_cc"
-BUILD_REPORT_SEND_BCC_KEY = "build_send_bcc"
+REPORT_TYPE_KEY = "report_type"
 REPORT_SEND_TO_KEY = "send_to"
 REPORT_CC_KEY = "send_cc"
 REPORT_BCC_KEY = "send_bcc"
@@ -278,6 +273,7 @@ KERNEL_BUILD_TYPE = "kernel"
 # Report types.
 BUILD_REPORT = "build"
 BOOT_REPORT = "boot"
+BISECT_REPORT = "bisect"
 
 # Bisect values.
 BISECT_BOOT_STATUS_KEY = "boot_status"
@@ -760,12 +756,6 @@ SEND_VALID_KEYS = {
             KERNEL_KEY
         ],
         ACCEPTED_KEYS: [
-            BOOT_REPORT_SEND_BCC_KEY,
-            BOOT_REPORT_SEND_CC_KEY,
-            BOOT_REPORT_SEND_TO_KEY,
-            BUILD_REPORT_SEND_BCC_KEY,
-            BUILD_REPORT_SEND_CC_KEY,
-            BUILD_REPORT_SEND_TO_KEY,
             DELAY_KEY,
             EMAIL_FORMAT_KEY,
             GIT_BRANCH_KEY,
@@ -773,12 +763,21 @@ SEND_VALID_KEYS = {
             JOB_KEY,
             KERNEL_KEY,
             LAB_NAME_KEY,
+            REPORT_TYPE_KEY,
             REPORT_BCC_KEY,
             REPORT_CC_KEY,
             REPORT_SEND_TO_KEY,
             SEND_BOOT_REPORT_KEY,
             SEND_BUILD_REPORT_KEY,
-            SUBJECT_KEY
+            SUBJECT_KEY,
+            # Bisection keys
+            TYPE_KEY,
+            ARCHITECTURE_KEY,
+            DEFCONFIG_FULL_KEY,
+            DEVICE_TYPE_KEY,
+            BISECT_GOOD_COMMIT_KEY,
+            BISECT_BAD_COMMIT_KEY,
+            BISECT_LOG_KEY,
         ]
     }
 }
@@ -789,7 +788,28 @@ BISECT_VALID_KEYS = {
         COLLECTION_KEY,
         COMPARE_TO_KEY,
         BUILD_ID_KEY
+<<<<<<< HEAD
     ]
+=======
+    ],
+    "POST": [
+        TYPE_KEY,
+        ARCHITECTURE_KEY,
+        JOB_KEY,
+        KERNEL_KEY,
+        GIT_BRANCH_KEY,
+        DEFCONFIG_FULL_KEY,
+        LAB_NAME_KEY,
+        DEVICE_TYPE_KEY,
+        BISECT_GOOD_COMMIT_KEY,
+        BISECT_BAD_COMMIT_KEY,
+        BISECT_GOOD_SUMMARY_KEY,
+        BISECT_BAD_SUMMARY_KEY,
+        BISECT_FOUND_SUMMARY_KEY,
+        BISECT_LOG_KEY,
+        BISECT_CHECKS_KEY,
+    ],
+>>>>>>> upstream/master
 }
 
 

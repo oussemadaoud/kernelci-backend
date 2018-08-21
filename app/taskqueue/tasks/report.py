@@ -17,6 +17,7 @@ import models
 import taskqueue.celery as taskc
 import utils.db
 import utils.emails
+import utils.report.bisect
 import utils.report.boot
 import utils.report.build
 import utils.report.common
@@ -27,14 +28,7 @@ import utils.report.error
 # pylint: disable=invalid-name
 # pylint: disable=too-many-locals
 @taskc.app.task(name="send-boot-report")
-def send_boot_report(
-        job,
-        git_branch,
-        kernel,
-        lab_name,
-        email_format,
-        to_addrs,
-        cc_addrs=None, bcc_addrs=None, in_reply_to=None, subject=None):
+def send_boot_report(job, git_branch, kernel, lab_name, email_opts):
     """Create the boot report email and send it.
 
     :param job: The job name.
@@ -43,18 +37,8 @@ def send_boot_report(
     :type kernel: string
     :param lab_name: The name of the lab.
     :type lab_name: string
-    :param email_format: The email format to send.
-    :type email_format: list
-    :param to_addrs: List of recipients.
-    :type to_addrs: list
-    :param cc: The list of addresses to add in CC.
-    :type cc: list
-    :param bcc: The list of addresses to add in BCC.
-    :type bcc: list
-    :param in_reply_to: The ID of the message this email is a reply to.
-    :type in_reply_to: string
-    :param subject: The subject string to use.
-    :type subject: string.
+    :param email_opts: Email options.
+    :type email_opts: dict
     """
     report_id = "-".join([job, git_branch, kernel])
     utils.LOG.info("Preparing boot report email for '{}'".format(report_id))
@@ -68,28 +52,23 @@ def send_boot_report(
             git_branch,
             kernel,
             lab_name,
-            email_format,
+            email_opts["format"],
             db_options=db_options,
             mail_options=taskc.app.conf.get("mail_options", None)
         )
 
-    if not subject:
-        subject = new_subject
+    subject = email_opts.get("subject") or new_subject
 
     if (txt_body or html_body) and subject:
         utils.LOG.info("Sending boot report email for '{}'".format(report_id))
         status, errors = utils.emails.send_email(
-            to_addrs,
-            subject,
-            txt_body,
-            html_body,
-            taskc.app.conf.mail_options,
-            headers=headers,
-            cc_addrs=cc_addrs, bcc_addrs=bcc_addrs, in_reply_to=in_reply_to
+            subject, txt_body, html_body, email_opts,
+            taskc.app.conf.mail_options, headers
         )
         utils.report.common.save_report(
-            job,
-            git_branch, kernel, models.BOOT_REPORT, status, errors, db_options)
+            job, git_branch, kernel, models.BOOT_REPORT,
+            status, errors, db_options
+        )
     else:
         utils.LOG.error(
             "No email body nor subject found for boot report '{}'"
@@ -111,71 +90,89 @@ def trigger_bisections(status, job, branch, kernel, lab_name):
 
 
 @taskc.app.task(name="send-build-report")
-def send_build_report(
-        job,
-        git_branch,
-        kernel,
-        email_format,
-        to_addrs,
-        db_options,
-        cc_addrs=None, bcc_addrs=None, in_reply_to=None, subject=None):
+def send_build_report(job, git_branch, kernel, email_opts):
     """Create the build report email and send it.
 
     :param job: The job name.
     :type job: string
+    :param git_branch: The git branch name.
+    :type git_branch: string
     :param kernel: The kernel name.
     :type kernel: string
-    :param email_format: The email format to send.
-    :type email_format: list
-    :param to_addrs: List of recipients.
-    :type to_addrs: list
-    :param db_options: The database connection parameters.
-    :type db_options: dictionary
-    :param cc: The list of addresses to add in CC.
-    :type cc: list
-    :param bcc: The list of addresses to add in BCC.
-    :type bcc: list
-    :param in_reply_to: The ID of the message this email is a reply to.
-    :type in_reply_to: string
-    :param subject: The subject string to use.
-    :type subject: string
+    :param email_opts: Email options.
+    :type email_opts: dict
     """
     utils.LOG.info(
         "Preparing build report email for '%s-%s-%s'", job, git_branch, kernel)
     status = "ERROR"
+
+    db_options = taskc.app.conf.get("db_options", {})
 
     txt_body, html_body, new_subject, headers = \
         utils.report.build.create_build_report(
             job,
             git_branch,
             kernel,
-            email_format,
+            email_opts["format"],
             db_options=db_options,
             mail_options=taskc.app.conf.get("mail_options", None)
         )
 
-    if not subject:
-        subject = new_subject
+    subject = email_opts.get("subject") or new_subject
 
     if (txt_body or html_body) and subject:
         utils.LOG.info("Sending build report email for '%s-%s'", job, kernel)
         status, errors = utils.emails.send_email(
-            to_addrs,
-            subject,
-            txt_body,
-            html_body,
-            taskc.app.conf.mail_options,
-            headers=headers,
-            cc_addrs=cc_addrs, bcc_addrs=bcc_addrs, in_reply_to=in_reply_to
+            subject, txt_body, html_body, email_opts,
+            taskc.app.conf.mail_options, headers
         )
         utils.report.common.save_report(
-            job,
-            git_branch,
-            kernel, models.BUILD_REPORT, status, errors, db_options)
+            job, git_branch, kernel, models.BUILD_REPORT,
+            status, errors, db_options
+        )
     else:
         utils.LOG.error(
-            "No email body nor subject found for build report '%s-%s-%s'",
-            job, git_branch, kernel)
+            "No email body nor subject found for build report '{}-{}-{}'"
+            .format(job, git_branch, kernel))
+
+    return status
+
+
+@taskc.app.task(name="send-bisect-report")
+def send_bisect_report(report_data, email_opts, base_path=utils.BASE_PATH):
+    """Send the bisect report email.
+
+    :param report_data: The data necessary for generating a report.
+    :type report_data: dict
+    :param email_opts: Email options.
+    :type email_opts: dict
+    """
+    status = "ERROR"
+    job, git_branch, kernel = (report_data[k] for k in [
+        models.JOB_KEY,
+        models.GIT_BRANCH_KEY,
+        models.KERNEL_KEY,
+    ])
+    report_id = "-".join([job, git_branch, kernel])
+
+    utils.LOG.info("Sending bisect report email for {}".format(report_id))
+
+    db_options = taskc.app.conf.get("db_options", {})
+
+    report_data = utils.report.bisect.create_bisect_report(
+        report_data, email_opts["format"], db_options)
+
+    if not report_data:
+        return status
+
+    txt_body, html_body, headers = report_data
+    status, errors = utils.emails.send_email(
+        email_opts["subject"], txt_body, html_body, email_opts,
+        taskc.app.conf.mail_options, headers)
+
+    utils.report.common.save_report(
+        job, git_branch, kernel, models.BISECT_REPORT,
+        status, errors, db_options)
 
     return status
 
@@ -183,8 +180,6 @@ def send_build_report(
 @taskc.app.task(name="send-multi-email-errors-report")
 def send_multiple_emails_error(
         job, git_branch, kernel, date, email_format, email_type, data):
-    to_addrs = []
-    cc_addrs = []
 
     email_data = {
         "job": job,
@@ -193,8 +188,8 @@ def send_multiple_emails_error(
         "trigger_time": date,
         "email_format": email_format,
         "email_type": email_type,
-        "to_addrs": to_addrs,
-        "cc_addrs": cc_addrs,
+        "to_addrs": data.get("to"),
+        "cc_addrs": data.get("cc"),
         "subject": data.get("subject"),
         "in_reply_to": data.get("in_reply_to"),
         "trigger_time": date
@@ -218,26 +213,6 @@ def send_multiple_emails_error(
     if result:
         email_data.update(result)
 
-    if data.get("generic_emails"):
-        to_addrs.extend(data.get("generic_emails"))
-    if data.get("boot_emails"):
-        to_addrs.extend(data.get("boot_emails"))
-    if data.get("build_emails"):
-        to_addrs.extend(data.get("build_emails"))
-
-    if data.get("build_cc_emails"):
-        cc_addrs.extend(data.get("build_cc_emails"))
-    if data.get("build_bcc_emails"):
-        cc_addrs.extend(data.get("build_cc_emails"))
-    if data.get("boot_cc_emails"):
-        cc_addrs.extend(data.get("boot_cc_emails"))
-    if data.get("boot_bcc_emails"):
-        cc_addrs.extend(data.get("boot_bcc_emails"))
-    if data.get("generic_cc_emails"):
-        cc_addrs.extend(data.get("generic_cc_emails"))
-    if data.get("generic_bcc_emails"):
-        cc_addrs.extend(data.get("generic_bcc_emails"))
-
     txt_body, html_body, subject = \
         utils.report.error.create_duplicate_email_report(email_data)
 
@@ -245,10 +220,6 @@ def send_multiple_emails_error(
         utils.LOG.info(
             "Sending duplicate emails report for %s-%s-%s",
             job, git_branch, kernel)
-        utils.emails.send_email(
-            [taskc.app.conf.mail_options["error_email"]],
-            subject,
-            txt_body,
-            html_body,
-            taskc.app.conf.mail_options
-        )
+        email_opts = {"to": [taskc.app.conf.mail_options["error_email"]]}
+        utils.emails.send_email(subject, txt_body, html_body, email_opts,
+                                taskc.app.conf.mail_options)
