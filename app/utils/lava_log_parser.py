@@ -75,7 +75,7 @@ def run(log, boot, txt, html):
     }
     numbers = {"warning": 0, "error": 0}
     start_ts = None
-    log_buffer = []
+    log_buffer = StringIO.StringIO()
 
     for line in log:
         iso_ts = dateutil.parser.parse(line["dt"])
@@ -84,13 +84,15 @@ def run(log, boot, txt, html):
 
         level, msg = (line.get(k) for k in ["lvl", "msg"])
 
-
         fmt = formats.get(level, None)
         if fmt:
-            log_buffer.append(timestamp + fmt.format(cgi.escape(msg)))
+            log_buffer.write(timestamp)
+            log_buffer.write(fmt.format(cgi.escape(msg)))
             numbers[level] += 1
         elif level == "target":
-            log_buffer.append(timestamp + cgi.escape(msg) + "\n")
+            log_buffer.write(timestamp)
+            log_buffer.write(cgi.escape(msg))
+            log_buffer.write("\n")
             txt.write(msg)
             txt.write("\n")
         elif level == "info" and msg.startswith("Start time: "):
@@ -108,8 +110,7 @@ def run(log, boot, txt, html):
     if start_ts:
         html.write("<li class=\"result\">{}</li>".format(start_ts))
     html.write("</ul><pre>\n")
-    for line in log_buffer:
-        html.write(line)
+    html.write(log_buffer.getvalue())
     html.write("</pre></body></html>\n")
 
 

@@ -11,7 +11,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import codecs
 import errno
 import models
 import os
@@ -255,8 +254,7 @@ def _add_boot_log(meta, job_log, base_path, name):
             if e.errno != errno.EEXIST:
                 raise e
 
-    with codecs.open(txt_path, "w", "utf-8") as txt, \
-         codecs.open(html_path, "w", "utf-8") as html:
+    with open(txt_path, "w") as txt, open(html_path, "w") as html:
         utils.lava_log_parser.run(log, meta, txt, html)
 
 

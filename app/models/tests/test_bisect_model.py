@@ -64,7 +64,6 @@ class TestBisectModel(unittest.TestCase):
             "job_id": None,
             "type": None,
             "found_summary": None,
-            "kernel": None,
             "log": None,
             "checks": {},
             "arch": None,
@@ -99,7 +98,6 @@ class TestBisectModel(unittest.TestCase):
             "job_id": None,
             "type": None,
             "found_summary": None,
-            "kernel": None,
             "log": None,
             "checks": {},
             "arch": None,
@@ -122,7 +120,6 @@ class TestBisectModel(unittest.TestCase):
         bisect_doc.job_id = "job-id"
         bisect_doc.git_url = "https://somewhere.com/blah.git"
         bisect_doc.git_branch = "master"
-        bisect_doc.kernel = "v123.456"
         bisect_doc.log = "https://storage.org/log.txt"
         bisect_doc.device_type = "qemu"
         bisect_doc.lab_name = "secret-lab"
@@ -155,7 +152,6 @@ class TestBisectModel(unittest.TestCase):
             "defconfig_full": None,
             "git_url": "https://somewhere.com/blah.git",
             "git_branch": "master",
-            "kernel": "v123.456",
             "log": "https://storage.org/log.txt",
             "found_summary": None,
             "checks": {},
@@ -176,7 +172,6 @@ class TestBisectModel(unittest.TestCase):
         bisect_doc.bad_commit_url = "url"
         bisect_doc.found_summary = "1234abcd foo: bar"
         bisect_doc.verified = "pass"
-        bisect_doc.kernel = "v456.789"
         bisect_doc.log = "https://storage.org/log.txt"
 
         self.assertEqual(bisect_doc.id, "bar")
@@ -191,7 +186,6 @@ class TestBisectModel(unittest.TestCase):
         self.assertEqual(bisect_doc.bad_commit_url, "url")
         self.assertEqual(bisect_doc.found_summary, "1234abcd foo: bar")
         self.assertEqual(bisect_doc.verified, "pass")
-        self.assertEqual(bisect_doc.kernel, "v456.789")
         self.assertEqual(bisect_doc.log, "https://storage.org/log.txt")
 
     def test_bisect_boot_properties(self):
@@ -211,7 +205,6 @@ class TestBisectModel(unittest.TestCase):
         bisect_doc.defconfig_full = "defconfig-full"
         bisect_doc.arch = "arm"
         bisect_doc.found_summary = "7890cdef foo: change bar into baz"
-        bisect_doc.kernel = "v4.56"
         bisect_doc.git_url = "https://somewhere.com/blah.git"
 
         expected = {
@@ -239,7 +232,6 @@ class TestBisectModel(unittest.TestCase):
             "git_branch": None,
             "found_summary": "7890cdef foo: change bar into baz",
             "git_url": "https://somewhere.com/blah.git",
-            "kernel": "v4.56",
             "log": None,
             "checks": {},
         }
