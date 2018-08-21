@@ -3,8 +3,6 @@ import requests
 import sys
 import json
 import argparse
-import urllib
-import urlparse
 
 
 def fake_callback(backend_url, lab_name, lab_token, filename):
@@ -18,12 +16,7 @@ def fake_callback(backend_url, lab_name, lab_token, filename):
         print "Can't find file, error: {}".format(err)
         return
     payload = json.load(json_file)
-    params = urllib.urlencode({
-        'lab_name': lab_name,
-        'status': 2,
-        'status_string': 'complete',
-    })
-    url = urlparse.urljoin(backend_url, 'callback/lava/boot?{}'.format(params))
+    url = backend_url + "/callback/lava/boot?lab_name=" + lab_name + "&status=2&status_string=complete"
     response = requests.post(url, headers=headers, json=payload)
     print response
 
